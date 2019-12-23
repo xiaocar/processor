@@ -1,0 +1,14 @@
+{
+    "name": "multi/processor",
+    "description": "A php Multi task distribution component",
+    "type": "composer-plugin",
+    "require": {
+        "php": "^7.1",
+        "ext-swoole": "^4.2.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "processor\\": "src/"
+        }
+    }
+}
