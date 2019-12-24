@@ -2,6 +2,7 @@
 
 namespace processor;
 
+use Exception;
 use swoole_process;
 
 class Processor
@@ -35,7 +36,7 @@ class Processor
             swoole_set_process_name(sprintf($this->processFormatName, 'master'));
             $this->work();
             $this->processWait();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new ProcessException(500, 'ALL ERROR: ' . $e->getMessage());
         }
     }
@@ -105,16 +106,20 @@ class Processor
      */
     protected function processWait()
     {
+        $map = array_flip($this->workers);
         while (true) {
             if (!count($this->workers)) {
                 break;
             }
-            $ret = swoole_process::wait();
-            if ($ret && $this->needReboot) {
-                $this->rebootProcess($ret);
-            } else {
-                break;
+            $ret = swoole_process::wait(false);
+            if (!$ret) {
+                continue;
             }
+            if($this->needReboot){
+                $this->rebootProcess($ret);
+                continue;
+            }
+            unset($this->workers[$map[$ret['pid']]], $map[$ret['pid']]);
         }
     }
 
